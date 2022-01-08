@@ -1,0 +1,20 @@
+<form action="/">
+  <ul>
+    {{range .Fields}}
+    <li>
+      <label for="{{.Name}}">{{.Name}}</label>
+      {{if eq .Kind "text"}}
+      <input type="text" name="{{.Name}}" id="{{.Name}}" value="" />
+      {{else if eq .Kind "checkbox"}}
+      <input type="checkbox" name="{{.Name}}" id="{{.Name}}" />
+      {{else if eq .Kind "select"}}
+      <select name="{{.Name}}" id="{{.Name}}">
+        {{range .Options}}
+        <option value="{{.Value}}">{{.Label}}</option>
+        {{end}}
+      </select>
+      {{end}}
+    </li>
+    {{end}}
+  </ul>
+</form>
