@@ -2,6 +2,7 @@
 package main
 
 import (
+	. "formly/form"
 	"html/template"
 	"log"
 	"net/http"
@@ -23,22 +24,7 @@ type User struct {
 	Area  []string `validate:"-" options:"a=1,b=2,c=3"`
 }
 
-type FormField struct {
-	Name    string
-	Kind    string
-	Options []Option
-}
-
-type Payload struct {
-	Fields []FormField
-}
-
-type Option struct {
-	Label string
-	Value string
-}
-
-func main() {
+func main1() {
 	tpl, err := template.ParseFiles("model.html")
 
 	fields := make([]FormField, 0)
@@ -69,7 +55,6 @@ func main() {
 		switch field.Type.Kind() {
 		case reflect.String:
 			kind = "text"
-			break
 		case reflect.Slice:
 			kind = "select"
 			for _, pair := range strings.Split(field.Tag.Get(OptionsTagName), ",") {
@@ -78,10 +63,8 @@ func main() {
 				log.Println("option", option)
 				options = append(options, Option{Label: option[0], Value: option[1]})
 			}
-			break
 		default:
 			kind = "text"
-			break
 		}
 
 		fields = append(fields, FormField{field.Name, kind, options})
