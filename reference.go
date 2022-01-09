@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/fatih/structtag"
+	"github.com/gorilla/mux"
 )
 
 // var src = `package mypackage
@@ -26,22 +27,18 @@ import (
 
 // `
 
-func main() {
-	// if len(os.Args) < 2 {
-	// 	log.Fatalln("expect a model")
-	// }
+func FormHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	log.Printf("request for model: %v\n", vars["model"])
 
+	fset := token.NewFileSet()
 	// Create the AST by parsing src.
-	fset := token.NewFileSet() // positions are relative to fset
-
-	f, err := parser.ParseFile(fset, "model/user.go", nil, 0)
+	f, err := parser.ParseFile(fset, fmt.Sprintf("./model/%s.go", vars["model"]), nil, 0)
 	if err != nil {
 		panic(err)
 	}
 
 	var fields []FormField
-
-	log.Println(fields)
 
 	for _, node := range f.Decls {
 		switch node.(type) {
@@ -72,7 +69,6 @@ func main() {
 								}
 
 							case *ast.ArrayType:
-
 								log.Println(field.Tag.Value)
 								tags, err := structtag.Parse(strings.Trim(field.Tag.Value, "`"))
 								if err != nil {
@@ -105,12 +101,12 @@ func main() {
 	}
 
 	log.Println(fields)
+	tpl.Execute(w, Payload{Fields: fields})
+}
 
-	// Test
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		tpl.Execute(w, Payload{Fields: fields})
-	})
-
-	http.ListenAndServe(":8080", nil)
+func main() {
+	r := mux.NewRouter()
+	r.HandleFunc("/{model}.tsx", FormHandler)
+	http.ListenAndServe(":8080", r)
 
 }
